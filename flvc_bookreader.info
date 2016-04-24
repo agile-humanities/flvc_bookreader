@@ -1,0 +1,7 @@
+name = "FLVC BookReader"
+description = "Implements the Internet Archive BookReader with Table of Contents"
+package = FLVC Islandora
+core = 7.x
+files[] = flvc_bookreader.module
+files[] = flvc_bookreader.install
+php = 5.3

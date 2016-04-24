@@ -1,0 +1,122 @@
+<?php
+
+/**
+ * @file
+ * BookReader with TOC, chapter markers
+ *
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function flvc_bookreader_menu() {
+  return array(
+    'islandora/object/%islandora_object/tocview' => array(
+      'title' => 'Table of Contents',
+      'type' => MENU_LOCAL_TASK,
+      'page callback' => 'flvc_bookreader_tocview_menu',
+      'page arguments' => array(2),
+      'access callback' => 'flvc_bookreader_tocview_access_callback',
+      'access arguments' => array(2),
+    ),
+  );
+}
+
+/**
+ * Implements hook_theme_registry_alter().
+ */
+function flvc_bookreader_theme_registry_alter(&$theme_registry) {
+  // Override the default islandora-internet-archive-bookreader.tpl.php with our own.
+  if (isset($theme_registry['islandora_internet_archive_bookreader'])) {
+    $module_path = drupal_get_path('module', 'flvc_bookreader');
+    $theme_registry['islandora_internet_archive_bookreader']['theme path'] = $module_path;
+    $theme_registry['islandora_internet_archive_bookreader']['template'] = $module_path . '/theme/islandora-internet-archive-bookreader';
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function flvc_bookreader_theme() {
+  return array(
+    'flvc_tocview' => array(
+      'arguments' => array('object' => NULL),
+      'file' => 'theme/theme.inc',
+      'template' => 'theme/flvc-tocview',
+    ),
+  );
+}
+
+/**
+ * Determine whether or not to show this modules table of contents tab.
+ *
+ * @param FedoraObject $object
+ *   The book object.
+ *
+ * @return bool
+ *   TRUE if it should be shown, and FALSE if it should not be shown.
+ */
+function flvc_bookreader_tocview_access_callback($object = NULL) {
+  if (!isset($object)) {
+    return FALSE;
+  }
+  $is_book = in_array('islandora:bookCModel', $object->models);
+  $is_issue = in_array('islandora:newspaperIssueCModel', $object->models);
+  $is_toc = isset($object['TOC']);
+  return ($is_book || $is_issue) && $is_toc && islandora_object_access_callback(ISLANDORA_VIEW_OBJECTS, $object);
+}
+
+/**
+ * Renders the Table of Contents local menu task.
+ *
+ * @param FedoraObject $object
+ *   The book object to fetch the pages from.
+ *
+ * @return string
+ *   The HTML repersentation of the given books pages.
+ */
+function flvc_bookreader_tocview_menu(FedoraObject $object) {
+  return theme('flvc_tocview', array('object' => $object));
+}
+
+/**
+ * Implements hook_preprocess_theme().
+ */
+function flvc_bookreader_preprocess_islandora_internet_archive_bookreader(array &$variables) {
+  module_load_include('inc', 'islandora', 'includes/utilities');
+  $object = $variables['object'];
+  $variables['parent_collections'] = islandora_get_parents_from_rels_ext($object);
+
+  $toc_found = 'false';
+  $toc_entries = array();
+  if (isset($object['TOC'])) {
+
+    $toc_found = 'true';
+    $toc_entries = drupal_json_decode($object['TOC']->content);
+
+    for ($i=0; $i < count($toc_entries['table_of_contents']); $i++) {
+      if (isset($toc_entries['table_of_contents'][$i]['type'])&&($toc_entries['table_of_contents'][$i]['type'] == 'chapter')) {
+          $toc_entries['table_of_contents'][$i]['pagenum'] = (string)$toc_entries['table_of_contents'][$i]['pagenum'];
+      }
+      else {
+          // clear out pagenum to exclude from chapter markers
+          $toc_entries['table_of_contents'][$i]['pagenum'] = 'unknown';
+      }
+    }
+  }
+
+  $data_array = array(
+    'islandoraInternetArchiveBookReader' => array(
+      'tocFound' => $toc_found,
+      'tocEntries' => $toc_entries,
+    ),
+  );
+
+  drupal_add_js($data_array, 'setting');
+
+  $module_path = drupal_get_path('module', 'flvc_bookreader');
+  drupal_add_js("$module_path/js/flvc_internet_archive_bookreader.js", array(
+    'group' => JS_LIBRARY,
+    'weight' => -2,
+  ));
+}
