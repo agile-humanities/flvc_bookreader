@@ -60,7 +60,8 @@ function flvc_bookreader_preprocess_flvc_tocview(array &$variables) {
   drupal_add_css("$library_path/dist/themes/default/style.min.css", array(
     'group' => CSS_SYSTEM,
   ));
-  drupal_add_js("$library_path/dist/libs/jquery.js", array(
+  drupal_add_js("http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js", array(
+    'type' => 'external',
     'group' => JS_LIBRARY,
     'weight' => -5,
   ));
