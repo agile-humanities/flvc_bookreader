@@ -10,7 +10,6 @@
  */
 function flvc_bookreader_preprocess_flvc_tocview(array &$variables) {
   $object = $variables['object'];
-  $toc_from_datastream = array();
 
   if (isset($object['TOC'])) {
     $toc_entries = drupal_json_decode($object['TOC']->content);
@@ -53,8 +52,6 @@ function flvc_bookreader_preprocess_flvc_tocview(array &$variables) {
   );
 
   drupal_add_js($data_array, 'setting');
-
-  $variables['toc_entries'] = $toc_from_datastream;
 
   $library_path = libraries_get_path('jstree');
   drupal_add_css("$library_path/dist/themes/default/style.min.css", array(
