@@ -53,12 +53,12 @@ function flvc_bookreader_preprocess_flvc_tocview(array &$variables) {
 
   drupal_add_js($data_array, 'setting');
 
+  $module_path = drupal_get_path('module', 'flvc_bookreader');
   $library_path = libraries_get_path('jstree');
   drupal_add_css("$library_path/dist/themes/default/style.min.css", array(
     'group' => CSS_SYSTEM,
   ));
-  drupal_add_js("http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js", array(
-    'type' => 'external',
+  drupal_add_js("$module_path/js/jquery.min.js", array(
     'group' => JS_LIBRARY,
     'weight' => -5,
   ));
@@ -67,7 +67,6 @@ function flvc_bookreader_preprocess_flvc_tocview(array &$variables) {
     'weight' => -5,
   ));
 
-  $module_path = drupal_get_path('module', 'flvc_bookreader');
   drupal_add_js("$module_path/js/toctree.js", array(
     'group' => JS_LIBRARY,
     'weight' => -5,
