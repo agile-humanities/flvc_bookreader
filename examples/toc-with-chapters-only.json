@@ -1,0 +1,40 @@
+{
+  "table_of_contents": [
+    {
+      "level": 1,
+      "pagenum": "1",
+      "title": "Front Cover",
+      "type": "chapter"
+    },
+    {
+      "level": 1,
+      "pagenum": "3",
+      "title": "Title Page",
+      "type": "chapter"
+    },
+    {
+      "level": 1,
+      "pagenum": "4",
+      "title": "Introduction",
+      "type": "chapter"
+    },
+    {
+      "level": 1,
+      "pagenum": "6",
+      "title": "Chapter 1",
+      "type": "chapter"
+    },
+    {
+      "level": 1,
+      "pagenum": "10",
+      "title": "Chapter 2",
+      "type": "chapter"
+    },
+    {
+      "level": 1,
+      "pagenum": "15",
+      "title": "Back Cover",
+      "type": "chapter"
+    },
+  ]
+}
