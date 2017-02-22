@@ -89,16 +89,37 @@ function flvc_bookreader_preprocess_islandora_internet_archive_bookreader(array 
 
   $toc_found = 'false';
   $toc_entries = array();
+  $page_numbers = array();
   if (isset($object['TOC'])) {
 
     $toc_found = 'true';
     $toc_entries = drupal_json_decode($object['TOC']->content);
 
+    for ($i=0; $i < count($toc_entries['table_of_contents']); $i++)
+    {
+        if (isset($toc_entries['table_of_contents'][$i]['type'])&&($toc_entries['table_of_contents'][$i]['type'] == 'page'))
+        {
+            // save page number in array
+            $sequence_number = intval($toc_entries['table_of_contents'][$i]['pagenum']);
+            if ($sequence_number > 0)
+            {
+                $page_numbers[$sequence_number - 1] = html_entity_decode($toc_entries['table_of_contents'][$i]['title'],ENT_QUOTES,'UTF-8');
+            }
+            // clear out pagenum to exclude from chapter markers
+            $toc_entries['table_of_contents'][$i]['pagenum'] = 'unknown';
+        }
+    }
+
     for ($i=0; $i < count($toc_entries['table_of_contents']); $i++) {
-      if (isset($toc_entries['table_of_contents'][$i]['type'])&&($toc_entries['table_of_contents'][$i]['type'] != 'chapter')) {
-          // clear out non-chapter entries to exclude from chapter markers
-          $toc_entries['table_of_contents'][$i]['pagenum'] = 'unknown';
+      if (isset($toc_entries['table_of_contents'][$i]['type'])&&($toc_entries['table_of_contents'][$i]['type'] == 'chapter')) {
+          $toc_entries['table_of_contents'][$i]['pagenum'] = $page_numbers[intval($toc_entries['table_of_contents'][$i]['pagenum']) - 1];
       }
+    }
+  }
+  else
+  {
+    for ($i=0; $i < count($pages); $i++) {
+        $page_numbers[$i] = strval($i + 1);
     }
   }
 
@@ -106,14 +127,81 @@ function flvc_bookreader_preprocess_islandora_internet_archive_bookreader(array 
     'islandoraInternetArchiveBookReader' => array(
       'tocFound' => $toc_found,
       'tocEntries' => $toc_entries,
+      'pageNumbers' => $page_numbers,
     ),
   );
 
   drupal_add_js($data_array, 'setting');
 
   $module_path = drupal_get_path('module', 'flvc_bookreader');
+  drupal_add_js("$module_path/js/flvc_book_reader.js",
+    array(
+      'group' => JS_LIBRARY,
+      'weight' => -2,
+    )
+  );
   drupal_add_js("$module_path/js/flvc_internet_archive_bookreader.js", array(
     'group' => JS_LIBRARY,
     'weight' => -2,
   ));
+}
+
+/**
+ * Implements hook_module_implements_alter().
+ *
+ * The order of hook calls by module name means that this module's 
+ * islandora_pageCModel_islandora_solr_object_result_alter hook always
+ * fires before the same hook in the islandora_solution_pack_book module.
+ * Removing islandora_solution_pack_book hook for now.
+ */
+function flvc_bookreader_module_implements_alter(&$implementations, $hook) {
+  // The order of modules means this hook always fires before the same hook in 
+  // islandora_solution_pack_book module.  Attempt to reorder here does not 
+  // work.  Removing islandora_solution_pack_book alter hook for now.
+  if ($hook === 'islandora_pageCModel_islandora_solr_object_result_alter') {
+    if (isset($implementations['islandora_book'])) {
+      unset($implementations['islandora_book']);
+    }
+  }
+}
+
+/**
+ * Implements hook_CMODEL_PID_islandora_solr_object_result_alter().
+ *
+ * Replaces the url for the search result to be the book's url, not the page.
+ * The page is added as a fragment at the end of the book url.
+ */
+function flvc_bookreader_islandora_pageCModel_islandora_solr_object_result_alter(&$search_results, $query_processor) {
+  drupal_set_message('in flvc_bookreader alter');
+  // Grab the names of the appropriate solr fields from the db.
+  $parent_book_field_name = variable_get('islandora_book_parent_book_solr_field', 'RELS_EXT_isMemberOf_uri_ms');
+  $page_number_field_name = variable_get('islandora_paged_content_page_number_solr_field', 'RELS_EXT_isSequenceNumber_literal_ms');
+  // If:
+  // there's an object url AND
+  // there's a solr doc AND
+  // the solr doc contains the parent book AND
+  // the solr doc contains the page number...
+  if (isset($search_results['object_url']) &&
+      isset($search_results['solr_doc']) &&
+      isset($search_results['solr_doc'][$parent_book_field_name]) &&
+      count($search_results['solr_doc'][$parent_book_field_name]) &&
+      isset($search_results['solr_doc'][$page_number_field_name]) &&
+      count($search_results['solr_doc'][$page_number_field_name])) {
+    // Replace the result url with that of the parent book and add the page
+    // number as a fragment.
+    $book_pid = preg_replace('/info\:fedora\//', '', $search_results['solr_doc'][$parent_book_field_name][0], 1);
+    $page_number = $search_results['solr_doc'][$page_number_field_name][0];
+    $page_index = intval($page_number) - 1;  // switching to page index
+
+    if (islandora_object_access(ISLANDORA_VIEW_OBJECTS, islandora_object_load($book_pid))) {
+      $search_results['object_url'] = "islandora/object/$book_pid";
+      $search_results['object_url_fragment'] = "page/n$page_index/mode/1up";
+
+      // XXX: Won't handle fielded searches nicely... then again, if our
+      // highlighting field is not the one being search on, this makes sense?
+      if ($query_processor->solrDefType == 'dismax' || $query_processor->solrDefType == 'edismax') {
+        $search_results['object_url_fragment'] .= "/search/" . rawurlencode($query_processor->solrQuery);
+      }
+    }
+  }
 }

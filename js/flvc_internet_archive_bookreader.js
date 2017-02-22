@@ -9,13 +9,14 @@
 // execution requires jQuery 1.7 or higher. 
 // TODO: Figure out what library is the culprate.
 //alert(jQuery().jquery);
-//Drupal.settings.islandoraInternetArchiveBookReader_jQuery = jQuery.noConflict(true);
+//Drupal.settings.flvcInternetArchiveBookReader_jQuery = jQuery.noConflict(true);
+Drupal.settings.flvcInternetArchiveBookReader_jQuery = $;
 //alert(jQuery().jquery);
 (function ($) {
   Drupal.behaviors.flvcInternetArchiveBookReader = {
     attach: function(context, settings) {
       $('.flvc-internet-archive-bookreader', context).once('flvc-bookreader', function () {
-        var bookReader = new IslandoraBookReader(settings.islandoraInternetArchiveBookReader);
+        var bookReader = new FLVCBookReader(settings.islandoraInternetArchiveBookReader);
         // Initialize and Render the BookReader.
         bookReader.init();
         // Handle page resize, required for full screen.
