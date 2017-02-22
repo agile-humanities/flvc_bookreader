@@ -172,7 +172,6 @@ function flvc_bookreader_module_implements_alter(&$implementations, $hook) {
  * The page is added as a fragment at the end of the book url.
  */
 function flvc_bookreader_islandora_pageCModel_islandora_solr_object_result_alter(&$search_results, $query_processor) {
-  drupal_set_message('in flvc_bookreader alter');
   // Grab the names of the appropriate solr fields from the db.
   $parent_book_field_name = variable_get('islandora_book_parent_book_solr_field', 'RELS_EXT_isMemberOf_uri_ms');
   $page_number_field_name = variable_get('islandora_paged_content_page_number_solr_field', 'RELS_EXT_isSequenceNumber_literal_ms');
