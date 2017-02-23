@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Add chapter markers and a Table of Contents tab to books with a TOC datastream.
+Add page labels, chapter markers, and a Table of Contents tab to books with a TOC datastream.
 
 ## Requirements
 
