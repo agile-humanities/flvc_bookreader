@@ -19,6 +19,15 @@ function flvc_bookreader_menu() {
       'access callback' => 'flvc_bookreader_tocview_access_callback',
       'access arguments' => array(2),
     ),
+    'islandora/object/%islandora_object/manage/book/add_toc' => array(
+      'title' => 'Add Table of contents',
+      'page callback' => 'flvc_add_toc',
+      'page arguments' => array(2),
+      'type' => MENU_LOCAL_ACTION,
+      'access callback' => 'islandora_object_access',
+      'access arguments' => array(ISLANDORA_INGEST, 2),
+      'file' => 'includes/toc.inc',
+    ),
   );
 }
 
@@ -94,10 +103,10 @@ function flvc_bookreader_preprocess_islandora_internet_archive_bookreader(array 
     $toc_found = 'true';
     $toc_entries = drupal_json_decode($object['TOC']->content);
 
-    for ($i=0; $i < count($toc_entries['table_of_contents']); $i++) {
-      if (isset($toc_entries['table_of_contents'][$i]['type'])&&($toc_entries['table_of_contents'][$i]['type'] != 'chapter')) {
-          // clear out non-chapter entries to exclude from chapter markers
-          $toc_entries['table_of_contents'][$i]['pagenum'] = 'unknown';
+    for ($i = 0; $i < count($toc_entries['table_of_contents']); $i++) {
+      if (isset($toc_entries['table_of_contents'][$i]['type']) && ($toc_entries['table_of_contents'][$i]['type'] != 'chapter')) {
+        // clear out non-chapter entries to exclude from chapter markers
+        $toc_entries['table_of_contents'][$i]['pagenum'] = 'unknown';
       }
     }
   }
