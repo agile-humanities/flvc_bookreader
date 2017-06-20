@@ -45,6 +45,7 @@ function flvc_bookreader_preprocess_flvc_tocview(array &$variables) {
       'state',
     ),
     'object' => $object->id,
+    'mode' => (int) variable_get('islandora_internet_archive_bookreader_default_page_view', 1),
   );
 
   $data_array = array(
