@@ -15,7 +15,7 @@ function flvc_bookreader_preprocess_flvc_tocview(array &$variables) {
     $toc_entries = drupal_json_decode($object['TOC']->content);
     $tree_entries = array();
     $last_parent = '#';
-    for ($i=0; $i < count($toc_entries['table_of_contents']); $i++) {
+    for ($i = 0; $i < count($toc_entries['table_of_contents']); $i++) {
       $tree_entry = array();
       $id = 'TC' . $i;
       $tree_entry['id'] = $id;
@@ -45,6 +45,7 @@ function flvc_bookreader_preprocess_flvc_tocview(array &$variables) {
       'state',
     ),
     'object' => $object->id,
+    'mode' => (int) variable_get('islandora_internet_archive_bookreader_default_page_view', 1),
   );
 
   $data_array = array(

@@ -16,9 +16,10 @@ Drupal.settings.tocTree_jQuery = jQuery.noConflict(true);
                 'plugins' : settings.flvc_toc.plugins
             });
             $('#flvc_toc_tree_view').bind("select_node.jstree", function(node, selected, event) {
+                var mode = '/mode/' + settings.flvc_toc.mod + 'up';
                 if (typeof selected.event != 'undefined') {
                     if (selected.event.type == 'click') {
-                        window.location = Drupal.settings.basePath + 'islandora/object/' + settings.flvc_toc.object + '#page/n' + (selected.node.original.pagenum - 1) + '/mode/2up';
+                        window.location = Drupal.settings.basePath + 'islandora/object/' + settings.flvc_toc.object + '#page/n' + (selected.node.original.pagenum - 1) + mode;
                     }
                 }
             });
