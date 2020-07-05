@@ -15,7 +15,7 @@
   Drupal.behaviors.flvcInternetArchiveBookReader = {
     attach: function(context, settings) {
       $('.flvc-internet-archive-bookreader', context).once('flvc-bookreader', function () {
-        var bookReader = NULL;
+        var bookReader = null;
         // Initialize and Render the BookReader.
         if (settings.islandoraInternetArchiveBookReader.pageSource === 'djatoka') {
           bookReader = new IslandoraDjatokaBookReader(settings.islandoraInternetArchiveBookReader);
