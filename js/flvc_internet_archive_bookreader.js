@@ -15,8 +15,14 @@
   Drupal.behaviors.flvcInternetArchiveBookReader = {
     attach: function(context, settings) {
       $('.flvc-internet-archive-bookreader', context).once('flvc-bookreader', function () {
-        var bookReader = new IslandoraBookReader(settings.islandoraInternetArchiveBookReader);
+        var bookReader = NULL;
         // Initialize and Render the BookReader.
+        if (settings.islandoraInternetArchiveBookReader.pageSource === 'djatoka') {
+          bookReader = new IslandoraDjatokaBookReader(settings.islandoraInternetArchiveBookReader);
+        }
+        else if (settings.islandoraInternetArchiveBookReader.pageSource === 'iiif') {
+          bookReader = new IslandoraIiifBookReader(settings.islandoraInternetArchiveBookReader);
+        }
         bookReader.init();
         // Handle page resize, required for full screen.
         $(window).resize(function() {
